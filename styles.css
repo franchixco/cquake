@@ -1,0 +1,401 @@
+/* --- FUENTE Y VARIABLES GLOBALES --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+:root {
+    --bg-main: #1e1e1e;
+    --bg-panel: #2d2d2d;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --border-color: #444;
+    --map-land: #4a4a4a;
+    --map-sea: #252525;
+    --map-border: #666;
+    --intensity-1: #5a5a5a;
+    --intensity-2: #2a73cc;
+    --intensity-3: #26a69a;
+    --intensity-4: #fbc02d;
+    --intensity-5: #ff7043;
+    --intensity-6: #e53935;
+    --intensity-7: #8e24aa;
+}
+
+/* --- ESTRUCTURA GENERAL DE LA WEBAPP --- */
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden; /* Evita barras de scroll innecesarias */
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif;
+    display: flex;
+    font-size: 14px;
+}
+
+/* --- PANEL IZQUIERDO: MAPA --- */
+.map-panel {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background-color: var(--map-sea);
+}
+
+.info-banner {
+    background-color: rgba(45, 45, 45, 0.9);
+    padding: 8px 15px;
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 10;
+    border-radius: 5px;
+}
+.info-banner h4 {
+    color: #fbc02d;
+    margin: 0 0 5px 0;
+    font-size: 15px;
+}
+.info-banner p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* --- NOTIFICACIONES EN TIEMPO REAL --- */
+.notifications-container {
+    position: absolute;
+    top: 85px; /* Debajo del info-banner */
+    left: 15px;
+    z-index: 15;
+    width: 400px;
+    max-width: calc(100vw - 30px);
+}
+
+.notification {
+    margin-bottom: 10px;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border-style: solid;
+    border-width: 4px;
+    animation: slideInLeft 0.5s ease-out;
+    opacity: 0;
+    animation-fill-mode: forwards;
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification.fade-out {
+    animation: slideOutLeft 0.5s ease-in forwards;
+}
+
+@keyframes slideOutLeft {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+}
+
+.notification-header {
+    color: white;
+    padding: 8px 12px;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.notification-body {
+    background-color: var(--bg-panel);
+    color: var(--text-primary);
+    padding: 12px;
+    font-size: 0.85em;
+    line-height: 1.3;
+}
+
+.notification-details {
+    margin-top: 5px;
+    font-size: 0.8em;
+    color: var(--text-secondary);
+}
+
+/* Estilos para notificación de información (Verde) - Leve movimiento */
+.notification-info {
+    border-color: #2aaa5b;
+}
+.notification-info .notification-header {
+    background-color: #2aaa5b;
+}
+
+/* Estilos para notificación de advertencia (Amarillo) - Sacudida de consideración */
+.notification-warning {
+    border-color: #ddb62b;
+}
+.notification-warning .notification-header {
+    background-color: #ddb62b;
+}
+
+/* Estilos para notificación de peligro (Rojo) - Movimiento muy fuerte */
+.notification-danger {
+    border-color: #e74c3c;
+}
+.notification-danger .notification-header {
+    background-color: #e74c3c;
+}
+
+#map-container {
+    width: 100%;
+    height: 100%;
+}
+
+/* Estilos específicos para MapLibre GL */
+.maplibregl-map {
+    width: 100%;
+    height: 100%;
+}
+
+.maplibregl-ctrl-top-right {
+    top: 80px; /* Para no solapar con el info-banner */
+}
+
+.prefecture {
+    fill: var(--map-land);
+    stroke: var(--map-border);
+    stroke-width: 0.5px;
+}
+
+.city-label {
+    fill: var(--text-primary);
+    font-size: 12px;
+    text-anchor: middle;
+    paint-order: stroke;
+    stroke: var(--bg-main);
+    stroke-width: 3px;
+    stroke-linecap: butt;
+    stroke-linejoin: miter;
+    pointer-events: none; /* Para que no interfiera con el zoom/pan */
+}
+
+.zoom-instructions-container {
+    opacity: 0.9;
+    pointer-events: none; /* Para que no interfiera con el zoom/pan */
+}
+
+.zoom-instructions {
+    fill: var(--text-primary);
+    font-size: 12px;
+    pointer-events: none; /* Para que no interfiera con el zoom/pan */
+}
+
+
+/* --- PANEL DERECHO: LISTA DE SISMOS --- */
+.list-panel {
+    flex: 1;
+    background-color: var(--bg-panel);
+    display: flex;
+    flex-direction: column;
+    min-width: 340px;
+    max-width: 450px; /* Evita que sea demasiado ancho en pantallas grandes */
+    border-left: 1px solid var(--border-color);
+}
+
+.list-header {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.refresh-button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.refresh-button:hover {
+    color: var(--text-primary);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.refresh-button:active {
+    transform: rotate(180deg);
+}
+
+.earthquake-list {
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.earthquake-item {
+    display: flex;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    position: relative;
+}
+.earthquake-item:hover {
+    background-color: #383838;
+}
+
+.earthquake-item:active {
+    transform: scale(0.98);
+}
+
+.earthquake-item.selected {
+    background-color: #3a3a3a;
+    border-left: 4px solid var(--text-primary);
+    padding-left: 11px; /* 15px - 4px del borde */
+}
+
+.item-intensity {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: 700;
+    margin-right: 15px;
+    flex-shrink: 0;
+    color: white;
+}
+
+.item-details {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto auto;
+    gap: 2px 10px;
+    width: 100%;
+}
+.item-region { font-weight: 500; grid-column: 1 / 2; }
+.item-time { font-size: 12px; color: var(--text-secondary); grid-column: 1 / 2; }
+.item-depth { font-size: 12px; color: var(--text-secondary); grid-column: 1 / 2; grid-row: 3 / 4; }
+.item-magnitude { font-size: 20px; font-weight: 700; grid-column: 2 / 3; grid-row: 1 / 4; align-self: center; }
+
+/* Estilos de Intensidad */
+.intensity-1 { background-color: var(--intensity-1); }
+.intensity-2 { background-color: var(--intensity-2); }
+.intensity-3 { background-color: var(--intensity-3); }
+.intensity-4 { background-color: var(--intensity-4); color: #333; }
+.intensity-5 { background-color: var(--intensity-5); }
+.intensity-6 { background-color: var(--intensity-6); }
+.intensity-7 { background-color: var(--intensity-7); }
+
+/* Estilos para marcadores de sismos en MapLibre GL */
+.earthquake-marker {
+    cursor: pointer;
+    position: relative;
+}
+
+.earthquake-marker:hover {
+    z-index: 100;
+}
+
+/* Estilos para popups de MapLibre */
+.maplibregl-popup-content {
+    background-color: var(--bg-panel);
+    color: var(--text-primary);
+    border-radius: 8px;
+    padding: 15px;
+    font-family: 'Inter', sans-serif;
+    min-width: 200px;
+}
+
+.maplibregl-popup-tip {
+    border-top-color: var(--bg-panel);
+}
+
+.popup-magnitude {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.popup-details {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.popup-location {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.popup-link {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+}
+
+.popup-link a {
+    color: #26a69a;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 13px;
+    transition: color 0.2s ease;
+}
+
+.popup-link a:hover {
+    color: #2a73cc;
+    text-decoration: underline;
+}
+
+.earthquake-item.featured {
+    background-color: #252525;
+    padding: 15px;
+}
+.earthquake-item.featured .item-intensity {
+    width: 60px;
+    height: 60px;
+    font-size: 40px;
+}
+.earthquake-item.featured .item-details {
+    grid-template-rows: auto auto auto;
+}
+.earthquake-item.featured .item-time { grid-row: 2 / 3; }
+.earthquake-item.featured .item-magnitude { font-size: 24px; }
+
+/* Estilos para mensajes de error y carga */
+.error-message, .no-data {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+    background-color: rgba(229, 57, 53, 0.1);
+    border-radius: 4px;
+    margin: 15px;
+}
+
+.no-data {
+    background-color: rgba(255, 255, 255, 0.05);
+}

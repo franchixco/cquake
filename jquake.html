@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor de Sismos - WebApp</title>
+    <!-- MapLibre GL JS -->
+    <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+    
+    <!-- PMTiles para Protomaps -->
+    <script src="https://unpkg.com/pmtiles/dist/pmtiles.js"></script>
+    
+    <!-- Configuración de la aplicación -->
+    <script src="config.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="map-panel">
+        <div class="info-banner">
+            <h4>Sistema de Alerta de Sismos</h4>
+            <p>Monitoreo de actividad sísmica en Chile</p>
+        </div>
+        
+        <!-- Contenedor de notificaciones en tiempo real -->
+        <div id="notifications-container" class="notifications-container"></div>
+        
+        <div id="map-container"></div>
+    </div>
+    <div class="list-panel">
+        <div class="list-header">
+            Últimos Sismos
+            <button id="refresh-button" class="refresh-button" title="Actualizar datos">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                </svg>
+            </button>
+        </div>
+        <div class="earthquake-list">
+            <!-- El contenido se generará dinámicamente -->
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

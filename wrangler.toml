@@ -1,0 +1,34 @@
+name = "jquake-chile"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+# Variables de entorno para producción
+[vars]
+# Estas variables deben ser configuradas en el dashboard de Cloudflare Workers
+# por seguridad, no incluir valores reales aquí
+
+# [env.production]
+# EARTHQUAKE_API_URL = "https://api.xor.cl/sismo/recent"  
+# WEBSOCKET_URI = "wss://www.seismicportal.eu/standing_order/websocket"
+# PROTOMAPS_API_KEY = "tu_api_key_aqui"
+
+# Configuraciones del mapa (opcionales, tienen defaults)
+# MAP_CENTER_LAT = "-33.4489" 
+# MAP_CENTER_LNG = "-70.6693"
+# MAP_ZOOM = "5"
+# MAP_MIN_ZOOM = "4"
+# MAP_MAX_ZOOM = "12"
+
+# Configuraciones de la aplicación (opcionales)
+# DATA_UPDATE_INTERVAL = "300000"
+# NOTIFICATION_AUTO_HIDE_DELAY = "10000" 
+# MAX_NOTIFICATIONS = "3"
+# WEBSOCKET_RECONNECT_DELAY = "5000"
+
+[build]
+command = ""
+cwd = ""
+watch_dir = ""
+
+[build.upload]
+format = "service-worker"
