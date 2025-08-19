@@ -1,3 +1,5 @@
 node_modules/
 .DS_Store
-config.js
+GEMINI.md
+GUIA_TECNICA.md
+DEPLOYMENT.md
