@@ -9,24 +9,25 @@ El proyecto está organizado en los siguientes archivos:
 - **index.html**: Contiene la estructura HTML básica de la aplicación.
 - **styles.css**: Contiene todos los estilos CSS para dar formato a la interfaz de usuario.
 - **script.js**: Contiene toda la lógica JavaScript para la funcionalidad de la aplicación.
-- **data/comunas.json**: Contiene los datos geográficos de las comunas de Chile en formato TopoJSON para la visualización del mapa.
+- **config.js**: Contiene la configuración de la aplicación, como endpoints de API y claves.
 
 ## Características
 
-- Visualización de sismos en un mapa interactivo de Chile usando D3.js y TopoJSON.
-- Marcadores de epicentros de sismos en el mapa con colores según su intensidad.
+- Visualización de sismos en un mapa interactivo de Chile usando MapLibre GL JS y Protomaps.
+- Marcadores de epicentros de sismos en el mapa con colores y tamaños según su intensidad.
 - Lista de sismos recientes con detalles como magnitud, ubicación y profundidad.
-- Indicador de intensidad con código de colores basado en la magnitud del sismo.
-- Reloj en tiempo real que muestra la fecha y hora actuales.
+- Notificaciones en tiempo real de nuevos sismos mediante WebSockets.
+- Actualización automática de datos cada 5 minutos.
 - Diseño responsivo que se adapta a diferentes tamaños de pantalla.
 
 ## Tecnologías Utilizadas
 
 - **HTML5**: Para la estructura básica de la aplicación.
 - **CSS3**: Para el diseño y estilo de la interfaz de usuario.
-- **JavaScript**: Para la lógica de la aplicación y manipulación del DOM.
-- **D3.js**: Para la visualización de datos geográficos y el mapa interactivo.
-- **TopoJSON**: Para el manejo eficiente de datos geográficos.
+- **JavaScript (ES6+)**: Para la lógica de la aplicación y manipulación del DOM.
+- **MapLibre GL JS**: Para la visualización de mapas interactivos.
+- **Protomaps (PMTiles)**: Para el servicio de mapas base.
+- **WebSocket**: Para la comunicación en tiempo real y notificaciones de sismos.
 
 ## Cómo Usar
 
