@@ -6,7 +6,7 @@ Esta aplicación web es una réplica de JQuake adaptada para Chile, un visor de 
 
 El proyecto está organizado en los siguientes archivos:
 
-- **jquake.html**: Contiene la estructura HTML básica de la aplicación.
+- **index.html**: Contiene la estructura HTML básica de la aplicación.
 - **styles.css**: Contiene todos los estilos CSS para dar formato a la interfaz de usuario.
 - **script.js**: Contiene toda la lógica JavaScript para la funcionalidad de la aplicación.
 - **data/comunas.json**: Contiene los datos geográficos de las comunas de Chile en formato TopoJSON para la visualización del mapa.
@@ -30,7 +30,7 @@ El proyecto está organizado en los siguientes archivos:
 
 ## Cómo Usar
 
-1. Abre el archivo `jquake.html` en un navegador web moderno.
+1. Abre el archivo `index.html` en un navegador web moderno.
 2. El mapa mostrará la región geográfica con las prefecturas y ciudades principales.
 3. La lista en el panel derecho mostrará los sismos recientes, con el más reciente destacado en la parte superior.
 4. El reloj en la esquina inferior derecha muestra la fecha y hora actuales.
