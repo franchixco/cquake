@@ -1,5 +1,5 @@
 /**
- * Configuración para JQuake Chile - Versión para GitHub Pages
+ * Configuración para CQuake Chile - Versión para GitHub Pages
  */
 
 const CONFIG = {

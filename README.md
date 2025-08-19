@@ -1,6 +1,6 @@
-# JQuake Chile - Visor de Sismos
+# CQuake Chile - Visor de Sismos
 
-Esta aplicación web es una réplica de JQuake adaptada para Chile, un visor de sismos que muestra información en tiempo real sobre actividad sísmica en el territorio chileno. La aplicación está estructurada con una arquitectura moderna que separa HTML, CSS y JavaScript.
+Esta aplicación web es una versión chilena de JQuake, un visor de sismos que muestra información en tiempo real sobre actividad sísmica en el territorio chileno. La aplicación está estructurada con una arquitectura moderna que separa HTML, CSS y JavaScript.
 
 ## Estructura del Proyecto
 

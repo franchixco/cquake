@@ -1,6 +1,6 @@
 
 /**
- * Configuración para JQuake Chile - Variables de entorno
+ * Configuración para CQuake Chile - Variables de entorno
  * Este archivo contiene configuraciones sensibles que deben ser manejadas
  * como variables de entorno en producción (Cloudflare Workers)
  */

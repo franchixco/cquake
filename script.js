@@ -473,7 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- DEBUG INFO ---
-    console.log('JQuake Chile - Migrado a MapLibre GL JS con Protomaps');
+    console.log('CQuake Chile - Migrado a MapLibre GL JS con Protomaps');
     console.log('Sistema de alertas sísmicas en tiempo real habilitado');
     console.log('Mapa inicializado correctamente');
 });
