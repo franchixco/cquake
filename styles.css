@@ -399,3 +399,211 @@ body {
 .no-data {
     background-color: rgba(255, 255, 255, 0.05);
 }
+
+/* ============================================================
+   ELEMENTOS BASE DEL BOTTOM SHEET (mobile-first)
+   Estas clases son invisibles/inofensivas en desktop, pero las
+   definimos aquí para que las media queries sólo cambien estados.
+   ============================================================ */
+
+/* Handle visual: pill gris centrado. Oculto en desktop. */
+.list-handle {
+    display: none;
+}
+
+/* Grupo contenedor de título + badge contador dentro del header */
+.list-title-group {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+/* Badge con el número de sismos cargados */
+.list-count {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background-color: var(--bg-main);
+    padding: 2px 8px;
+    border-radius: 10px;
+    line-height: 1.4;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE BOTTOM SHEET
+   Breakpoint principal: tablets y menores (<768px)
+   El .list-panel pasa a ser un bottom sheet fijo al pie,
+   con dos estados controlados por la clase .sheet-expanded.
+   ============================================================ */
+
+@media (max-width: 768px) {
+    /* El body pasa de flex-row a stack vertical sobrelapado */
+    body {
+        flex-direction: column;
+    }
+
+    /* El mapa ocupa toda la pantalla */
+    .map-panel {
+        flex: none;
+        width: 100vw;
+        height: 100vh;
+    }
+
+    /* El panel de lista se transforma en bottom sheet */
+    .list-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        height: 60vh; /* Altura del estado expandido */
+        max-height: 85vh;
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+        border-radius: 16px 16px 0 0;
+        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.5);
+        z-index: 50;
+
+        /* Estado colapsado por defecto: sólo se ve el header */
+        transform: translateY(calc(100% - 80px));
+        transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+        will-change: transform;
+    }
+
+    /* Estado expandido: se desliza hacia arriba */
+    .list-panel.sheet-expanded {
+        transform: translateY(0);
+    }
+
+    .list-panel.sheet-dragging {
+        transition: none;
+        user-select: none;
+    }
+
+    /* El handle se hace visible en mobile como affordance de arrastre */
+    .list-handle {
+        display: block;
+        width: 40px;
+        height: 5px;
+        background-color: var(--border-color);
+        border-radius: 3px;
+        margin: 8px auto 4px;
+        flex-shrink: 0;
+    }
+
+    /* Header del sheet: touch-friendly, actúa como zona de tap/drag */
+    .list-header {
+        min-height: 44px;
+        padding: 8px 20px 12px;
+        font-size: 16px;
+        cursor: grab;
+        touch-action: none;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .list-title {
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    /* El contenido de la lista no interfiere cuando colapsado */
+    .earthquake-list {
+        padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+
+    /* El item "featured" se compacta en mobile para ahorrar espacio */
+    .earthquake-item.featured {
+        padding: 12px 15px;
+    }
+    .earthquake-item.featured .item-intensity {
+        width: 44px;
+        height: 44px;
+        font-size: 28px;
+    }
+    .earthquake-item.featured .item-magnitude {
+        font-size: 22px;
+    }
+
+    /* Notificaciones: limitadas al ancho de pantalla, sin desbordar */
+    .notifications-container {
+        width: calc(100vw - 24px);
+        max-width: calc(100vw - 24px);
+        left: 12px;
+        top: 70px;
+    }
+
+    /* Asegura target touch cómodo en items de la lista */
+    .earthquake-item {
+        min-height: 44px;
+        padding: 12px 15px;
+    }
+
+    /* Controles de mapa más abajo para no solapar con el info-banner */
+    .maplibregl-ctrl-top-right {
+        top: 70px;
+    }
+
+    .info-banner {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        padding: 6px 12px;
+        max-width: calc(100vw - 110px);
+        box-sizing: border-box;
+        z-index: 100;
+    }
+    .info-banner h4 { font-size: 14px; }
+    .info-banner p { font-size: 11px; }
+
+    /* Refresh button: agrandamos el target táctil */
+    .refresh-button {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE — MÓVILES PEQUEÑOS (<480px)
+   Ajustes finos para pantallas tipo iPhone SE / small Android.
+   ============================================================ */
+
+@media (max-width: 480px) {
+    /* El sheet expandido cubre casi toda la pantalla */
+    .list-panel {
+        height: 75vh;
+    }
+
+    /* El item featured se compacta aún más */
+    .earthquake-item.featured .item-intensity {
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+    }
+
+    /* El badge contador reduce su tamaño */
+    .list-count {
+        font-size: 11px;
+        padding: 1px 7px;
+    }
+
+    /* El título del sheet aprovecha mejor el espacio */
+    .list-title {
+        font-size: 15px;
+    }
+
+    /* Las notificaciones se ajustan para no cubrir todo el mapa */
+    .notification-header { font-size: 0.85em; padding: 6px 10px; }
+    .notification-body { padding: 10px; font-size: 0.8em; }
+}
+
+/* Al final del archivo: reduce el motion si el usuario lo prefiere */
+@media (prefers-reduced-motion: reduce) {
+    .list-panel {
+        transition: none;
+    }
+}

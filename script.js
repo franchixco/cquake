@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Variables para sistema de notificaciones
     let websocket = null;
     const notificationsContainer = document.getElementById('notifications-container');
+    let currentPopup = null;
 
     // --- CARGA DE DATOS DESDE LA API ---
     async function fetchEarthquakeData() {
@@ -87,6 +88,33 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${day}-${month}-${year} ${formattedTime}`;
     }
 
+    function showEarthquakePopup(event) {
+        if (currentPopup) {
+            currentPopup.remove();
+        }
+        currentPopup = new maplibregl.Popup({
+            offset: 25,
+            closeButton: true,
+            closeOnClick: true
+        })
+        .setLngLat([event.longitude, event.latitude])
+        .setHTML(`
+            <div class="popup-location">${event.geo_reference}</div>
+            <div class="popup-magnitude">Magnitud ${event.magnitude.value} ${event.magnitude.measure_unit}</div>
+            <div class="popup-details">
+                <div>Fecha: ${formatLocalDate(event.local_date)}</div>
+                <div>Profundidad: ${event.depth} km</div>
+                <div>Coordenadas: ${event.latitude.toFixed(3)}, ${event.longitude.toFixed(3)}</div>
+                ${event.url ? `<div class="popup-link"><a href="${event.url}" target="_blank" rel="noopener">Más información →</a></div>` : ''}
+            </div>
+        `)
+        .addTo(map);
+
+        currentPopup.on('close', () => {
+            currentPopup = null;
+        });
+    }
+
     /**
      * Actualiza la lista de sismos en la interfaz
      */
@@ -124,11 +152,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 const id = this.getAttribute('data-id');
                 const lat = parseFloat(this.getAttribute('data-lat'));
                 const lng = parseFloat(this.getAttribute('data-lng'));
-                
-                // Hacer zoom en el marcador correspondiente
+                const event = apiData.events.find(e => e.id === id);
+
                 zoomToEarthquake(id, [lng, lat]);
+                if (event) showEarthquakePopup(event);
+
+                if (mobileMedia && mobileMedia.matches && listPanel) {
+                    listPanel.classList.remove('sheet-expanded');
+                    setTimeout(() => map.resize(), 360);
+                }
             });
         });
+
+        // Actualizar el badge contador del bottom sheet (mobile)
+        const countEl = document.getElementById('earthquake-count');
+        if (countEl) countEl.textContent = apiData.events.length;
     }
 
     /**
@@ -209,25 +247,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const properties = feature.properties;
                     
                     zoomToEarthquake(properties.id, feature.geometry.coordinates);
-                    
-                    // Crear y mostrar popup
-                    new maplibregl.Popup({
-                        offset: 25,
-                        closeButton: true,
-                        closeOnClick: true
-                    })
-                    .setLngLat(feature.geometry.coordinates)
-                    .setHTML(`
-                        <div class="popup-location">${properties.location}</div>
-                        <div class="popup-magnitude">Magnitud ${properties.magnitude} ${properties.measure_unit}</div>
-                        <div class="popup-details">
-                            <div>Fecha: ${formatLocalDate(properties.date)}</div>
-                            <div>Profundidad: ${properties.depth} km</div>
-                            <div>Coordenadas: ${feature.geometry.coordinates[1].toFixed(3)}, ${feature.geometry.coordinates[0].toFixed(3)}</div>
-                            ${properties.url ? `<div class="popup-link"><a href="${properties.url}" target="_blank" rel="noopener">Más información →</a></div>` : ''}
-                        </div>
-                    `)
-                    .addTo(map);
+
+                    const event = apiData.events.find(e => e.id === properties.id);
+                    if (event) showEarthquakePopup(event);
                 }
             });
 
@@ -476,4 +498,146 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('CQuake Chile - Migrado a MapLibre GL JS con Protomaps');
     console.log('Sistema de alertas sísmicas en tiempo real habilitado');
     console.log('Mapa inicializado correctamente');
+
+    // ============================================================
+    // BOTTOM SHEET MOBILE — Toggle, resize del mapa y contador
+    // Sólo activa comportamiento en mobile vía matchMedia.
+    // No afecta desktop. Clases CSS controlan la transición visual.
+    // ============================================================
+    const listPanel = document.querySelector('.list-panel');
+    const listHeader = document.querySelector('.list-header');
+    const earthquakeCountEl = document.getElementById('earthquake-count');
+    const mobileMedia = window.matchMedia('(max-width: 768px)');
+
+    // Alterna el estado colapsado/expandido del bottom sheet
+    function toggleBottomSheet() {
+        if (!listPanel) return;
+        listPanel.classList.toggle('sheet-expanded');
+        // MapLibre necesita saber que su contenedor cambió de tamaño
+        if (typeof map !== 'undefined') {
+            setTimeout(() => map.resize(), 360);
+        }
+    }
+
+    let sheetSwipeHandled = false;
+    let sheetStartY = 0;
+    let sheetStartX = 0;
+    let sheetIsDragging = false;
+    let sheetIsRealDrag = false;
+    let sheetStartOffset = 0;
+    const SHEET_SWIPE_THRESHOLD = 60;
+    const SHEET_TAP_THRESHOLD = 10;
+
+    function getSheetCollapsedOffset() {
+        const handle = listPanel.querySelector('.list-handle');
+        const visibleHeight = listHeader.offsetHeight + (handle ? handle.offsetHeight : 0);
+        return Math.max(0, listPanel.offsetHeight - visibleHeight);
+    }
+
+    if (listHeader) {
+        listHeader.addEventListener('click', (e) => {
+            if (e.target.closest('.refresh-button')) return;
+            if (!mobileMedia.matches) return;
+            if (sheetSwipeHandled) {
+                sheetSwipeHandled = false;
+                return;
+            }
+            toggleBottomSheet();
+        });
+
+        listHeader.addEventListener('touchstart', (e) => {
+            if (!mobileMedia.matches) return;
+            if (e.target.closest('.refresh-button')) return;
+            const touch = e.touches[0];
+            sheetStartY = touch.clientY;
+            sheetStartX = touch.clientX;
+            sheetIsDragging = true;
+            sheetIsRealDrag = false;
+            sheetSwipeHandled = false;
+            sheetStartOffset = listPanel.classList.contains('sheet-expanded') ? 0 : getSheetCollapsedOffset();
+            listPanel.classList.add('sheet-dragging');
+        }, { passive: true });
+
+        listHeader.addEventListener('touchmove', (e) => {
+            if (!sheetIsDragging || !mobileMedia.matches) return;
+            const touch = e.touches[0];
+            const deltaY = touch.clientY - sheetStartY;
+            const deltaX = touch.clientX - sheetStartX;
+
+            if (!sheetIsRealDrag) {
+                if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+                    sheetIsDragging = false;
+                    listPanel.classList.remove('sheet-dragging');
+                    return;
+                }
+                if (Math.abs(deltaY) < SHEET_TAP_THRESHOLD && Math.abs(deltaX) < SHEET_TAP_THRESHOLD) {
+                    return;
+                }
+                sheetIsRealDrag = true;
+            }
+
+            e.preventDefault();
+            const maxOffset = getSheetCollapsedOffset();
+            const newOffset = Math.max(0, Math.min(maxOffset, sheetStartOffset + deltaY));
+            listPanel.style.transform = `translateY(${newOffset}px)`;
+        }, { passive: false });
+
+        listHeader.addEventListener('touchend', (e) => {
+            if (!sheetIsDragging || !mobileMedia.matches) return;
+            sheetIsDragging = false;
+            listPanel.classList.remove('sheet-dragging');
+
+            if (!sheetIsRealDrag) {
+                listPanel.style.transform = '';
+                return;
+            }
+            sheetIsRealDrag = false;
+            sheetSwipeHandled = true;
+
+            const touch = e.changedTouches[0];
+            const deltaY = touch.clientY - sheetStartY;
+            const maxOffset = getSheetCollapsedOffset();
+            const currentOffset = Math.max(0, Math.min(maxOffset, sheetStartOffset + deltaY));
+
+            listPanel.style.transform = '';
+
+            if (deltaY < -SHEET_SWIPE_THRESHOLD || currentOffset < maxOffset * 0.4) {
+                listPanel.classList.add('sheet-expanded');
+            } else if (deltaY > SHEET_SWIPE_THRESHOLD || currentOffset >= maxOffset * 0.4) {
+                listPanel.classList.remove('sheet-expanded');
+            }
+            setTimeout(() => map.resize(), 360);
+        }, { passive: true });
+
+        listHeader.addEventListener('touchcancel', () => {
+            if (!sheetIsDragging) return;
+            sheetIsDragging = false;
+            sheetIsRealDrag = false;
+            listPanel.classList.remove('sheet-dragging');
+            listPanel.style.transform = '';
+            if (sheetStartOffset === 0) {
+                listPanel.classList.add('sheet-expanded');
+            } else {
+                listPanel.classList.remove('sheet-expanded');
+            }
+        }, { passive: true });
+    }
+
+    if (mobileMedia.media) {
+        mobileMedia.addEventListener('change', () => {
+            if (typeof map !== 'undefined') setTimeout(() => map.resize(), 100);
+            if (!mobileMedia.matches && listPanel) {
+                listPanel.classList.remove('sheet-expanded', 'sheet-dragging');
+                listPanel.style.transform = '';
+            }
+        });
+    }
+
+    // ResizeObserver: el mapa escucha cambios reales de tamaño del contenedor
+    if (window.ResizeObserver && document.getElementById('map-container')) {
+        const ro = new ResizeObserver(() => {
+            if (typeof map !== 'undefined') map.resize();
+        });
+        ro.observe(document.getElementById('map-container'));
+    }
 });
